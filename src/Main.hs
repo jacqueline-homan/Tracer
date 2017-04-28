@@ -1,7 +1,9 @@
 module Main where
 
 import Lawless
-import IO 
+import IO
+
+import Happstack.Server (nullConf, simpleHTTP, toResponse, ok)
 
 main :: IO ()
-main = putStrLn "Hello, Haskell!"
+main = simpleHTTP nullConf $ ok "Hello, World!"

@@ -8,7 +8,7 @@ import IO
 
 import Happstack.Server (nullConf, simpleHTTP, toResponse, ok, LogAccess, Conf(..))
 
-logRequest ∷ ∀ t. FormatTime t ⇒ LogAccess t
+logRequest ∷ ∀ t. (Printable t, FormatTime t) ⇒ LogAccess t
 logRequest host user time requestLine responseCode size referer userAgent =
     putStrLn $ hsep [
     print time,

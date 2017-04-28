@@ -1,20 +1,17 @@
 module Main where
 
 import Lawless
-import Data.Time.Format
+import Time
 import Textual
 import IO
 
 
 import Happstack.Server (nullConf, simpleHTTP, toResponse, ok, LogAccess, Conf(..))
 
-printTime =
-    print ∘ formatTime defaultLocale (iso8601DateFormat (Just "%H:%M:%S.%q%z"))
-
-logRequest ∷ LogAccess
+logRequest ∷ LogAccess Time
 logRequest host user time requestLine responseCode size referer userAgent =
     putStrLn $ hsep [
-    printTime time,
+    print time,
     referer,
     brackets requestLine,
     brackets referer,

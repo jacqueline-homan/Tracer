@@ -1,17 +1,17 @@
 module Main where
 
 import Lawless
-import Time
+import Data.Time.Format
 import Textual
 import IO
 
+import Happstack.Server (nullConf, simpleHTTP, LogAccess, Conf(..), tempRedirect)
 
-import Happstack.Server (nullConf, simpleHTTP, toResponse, ok, LogAccess, Conf(..))
-
-logRequest ∷ ∀ t. (Printable t, FormatTime t) ⇒ LogAccess t
-logRequest host user time requestLine responseCode size referer userAgent =
+logRequest ∷ ∀ t. (FormatTime t) ⇒ LogAccess t
+logRequest host _ time requestLine _ _ referer userAgent =
     putStrLn $ hsep [
-    print time,
+    formatTime defaultTimeLocale (iso8601DateFormat $ Just "%H:%M:%S.%q%z") time,
+    host,
     referer,
     brackets requestLine,
     brackets referer,
@@ -22,4 +22,6 @@ serverConfig ∷ Conf
 serverConfig = nullConf {logAccess = Just logRequest}
 
 main ∷ IO ()
-main = simpleHTTP serverConfig $ ok "Hello, World!"
+main = simpleHTTP serverConfig $ tempRedirect "https://www.patreon.com/teamunixman" "Server Response https://www.patreon.com/teamunixman"
+
+

@@ -5,7 +5,8 @@ import Data.Time.Format
 import Textual
 import IO
 
-import Happstack.Server (nullConf, simpleHTTP, toResponse, ok)
+
+import Happstack.Server (nullConf, simpleHTTP, toResponse, ok, LogAccess, Conf(..))
 
 printTime =
     print ∘ formatTime defaultLocale (iso8601DateFormat (Just "%H:%M:%S.%q%z"))

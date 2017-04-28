@@ -8,7 +8,7 @@ import IO
 
 import Happstack.Server (nullConf, simpleHTTP, toResponse, ok, LogAccess, Conf(..))
 
-logRequest ∷ LogAccess Time
+logRequest ∷ ∀ t. FormatTime t ⇒ LogAccess t
 logRequest host user time requestLine responseCode size referer userAgent =
     putStrLn $ hsep [
     print time,
@@ -21,5 +21,5 @@ logRequest host user time requestLine responseCode size referer userAgent =
 serverConfig ∷ Conf
 serverConfig = nullConf {logAccess = Just logRequest}
 
-main :: IO ()
+main ∷ IO ()
 main = simpleHTTP serverConfig $ ok "Hello, World!"

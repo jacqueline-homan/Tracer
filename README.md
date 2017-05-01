@@ -62,7 +62,10 @@ the following command to add it to your profile:
 
     cat >> $HOME/.profile <<EOF
 
+    # Add the shared cabal sandbox to the PATH.
     export PATH=$$HOME/Haskell/cabal-sandbox/bin:$$PATH
+
+    EOF
 
 _NOTE: Make absolutely sure_ you use `cat >>` above, or you'll
 overwrite your profile instead of adding to it.
@@ -96,3 +99,5 @@ Then we need to install the packages it depends on:
 
 This might take some time, since it has to download all the packages
 `QuickTracker` needs and build them.
+
+# Code Walkthrough

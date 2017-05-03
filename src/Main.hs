@@ -1,5 +1,3 @@
-{-# Language TemplateHaskell #-}
-
 module Main where
 
 import Lawless
@@ -25,18 +23,34 @@ import Happstack.Server.SURI (ToSURI)
 -- * Type definitions
 
 -- | The target we'll be redirecting to.
-newtype RedirectTo = RedirectTo URI deriving (Eq, Ord, Show, ToSURI)
-makePrisms ''RedirectTo
+newtype RedirectTo = RedirectTo {unRedirectTo ∷ URI}
+    deriving (Eq, Ord, Show, ToSURI)
+
+-- | Prism that will only construct a 'RedirectTo' from a valid URI string.
+redirectTo ∷ Prism' Text RedirectTo
+redirectTo = prism'
+    (view packed ∘ show ∘ unRedirectTo)
+    (fmap RedirectTo ∘ parseAbsoluteURI ∘ view unpacked)
 
 -- | The message we'll send in the body of the redirect.
-newtype RedirectBody = RedirectBody Text deriving (Eq, Ord, Show, ToMessage)
-makePrisms ''RedirectBody
+newtype RedirectBody = RedirectBody {unRedirectBody ∷ Text}
+    deriving (Eq, Ord, Show, ToMessage)
+redirectBody ∷ Iso' Text RedirectBody
+redirectBody = iso RedirectBody unRedirectBody
+
+-- | Build a 'RedirectBody' from a list of 'Text' values.
+redirectBody' ∷ ∀ (f ∷ * → *). Traversable f ⇒ Getter (f Text) RedirectBody
+redirectBody' = to $ RedirectBody ∘ buildText ∘ hsep ∘ over traversed print
 
 data App = App {
     _appRedirectTo ∷ RedirectTo,
     _appBody ∷ RedirectBody
     } deriving (Eq, Ord, Show)
-makeLenses ''App
+appRedirectTo ∷ Lens' App RedirectTo
+appRedirectTo = lens (_appRedirectTo) (\a r → a {_appRedirectTo = r})
+
+appBody ∷ Lens' App RedirectBody
+appBody = lens (_appBody) (\a b → a {_appBody = b})
 
 -- * Our request logger
 
@@ -74,33 +88,18 @@ redirectApp a = tempRedirect (a ^. appRedirectTo) (a ^. appBody)
 -- | Builds an 'App' from the list of command line arguments if
 -- possible.
 --
--- First we check that we have at least two arguments, one for the
--- redirect target, the other for the redirect message. Then, we
--- create the 'RedirectTo' by parsing the URI, which also may fail,
--- and converting the body message straight to a 'RedirectBody' which
--- won't fail.
---
--- By taking the arguments as a parameter, we don't need access to
--- 'IO' from this function, and we can leave all of that in 'main'.
-app ∷ [Arg] → Maybe App
-app as =
+-- Checks that we have at least two arguments, then builds 'App' in
+-- 'Maybe' using 'Applicative'.
+app ∷ Getter [Arg] (Maybe App)
+app =
     let
-        -- Check the length of the arguments. If there aren't at least
-        -- two, we return Nothing. Otherwise, we return the list of
-        -- arguments.
-        alen ∷ Maybe [Arg]
-        alen = if (lengthOf traversed as < 2) then Nothing else Just as
-
-        -- Parse an 'Arg' and if successful, return a 'RedirectTo'.
-        rt ∷ Arg → Maybe RedirectTo
-        rt auri = (RedirectTo <$> parseAbsoluteURI (auri ^. unpacked))
-
-        -- Join a series of 'Arg's into a single 'RedirectBody'
-        -- separated by spaces.
-        msg ∷ [Arg] → Maybe RedirectBody
-        msg = Just ∘ RedirectBody ∘ buildText ∘ hsep ∘ over traversed print
+        gs ∷ [Arg] → Maybe App
+        gs (auri:msgs) = App
+            <$> (auri ^. _Arg ^.pre redirectTo)
+            ⊛ (Just ∘ view redirectBody' $ msgs & mapped %~ view _Arg)
+        gs _ = Nothing
     in
-        alen ≫= \(auri:msgs) → App <$> rt auri ⊛ msg msgs
+        to gs
 
 -- | Print an error message if we can't parse the URI or there's no
 -- message.
@@ -120,7 +119,6 @@ exitFail = do
 
 main ∷ IO ()
 main = do
-    a ← app <$> args
-    case a of
-        Just p → server $ redirectApp p
-        Nothing → exitFail
+    a ← args
+
+    maybe exitFail (server ∘ redirectApp) (a ^. app)

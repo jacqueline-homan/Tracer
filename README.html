@@ -11,7 +11,7 @@
 <h1 id="quicktracker">QuickTracker</h1>
 <p>This project is a simple redirector that records requests for a resource, then redirects them to the actual target destination.</p>
 <p>This is meant to be an auditing tool for promotional campaigns to ensure that reported clicks are actually made through to the target site.</p>
-<h1 id="git">Git</h1>
+<h1 id="getting-started">Getting Started</h1>
 <p>Let’s set some sensible defaults in Git. First, we only want it to do “fast-forward” merges:</p>
 <pre><code>git config --global merge.ff=only</code></pre>
 <p>Next, let’s make sure that when we’re pulling changes in from other branches, we rebase on top of them to avoid merge commits:</p>
@@ -19,36 +19,42 @@
 git config --global branch.autosetupmerge=0
 git config --global pull.rebase=true</code></pre>
 <p>Merge commits are problematic for any number of reasons, but then so is rebasing. But rebasing and keeping the git history linear makes following the changes of a project and working with remote repositories much easier.</p>
-<h1 id="cabal">Cabal</h1>
-<h2 id="first-initialization">First Initialization</h2>
+<h2 id="cabal">Cabal</h2>
+<h3 id="first-initialization">First Initialization</h3>
 <p>First, we should make sure we have the latest cabal package list:</p>
 <pre><code>cabal update</code></pre>
 <p>This will also create a default configuration in <code>$HOME/.cabal/config</code>. Next, we should edit this configuration file. In your favorite text editor, open this file, and find the line <code>default-user-config:</code>. Underneath that, add the following line:</p>
 <pre><code>require-sandbox: True</code></pre>
 <p>This will help prevent accidentally installing packages outside of a sandbox, which will definitely impact the system.</p>
-<h2 id="sandbox-setup">Sandbox Setup</h2>
+<h3 id="sandbox-setup">Sandbox Setup</h3>
 <p>Now, we can <a href="https://www.haskell.org/cabal/users-guide/installing-packages.html#sandboxes-basic-usage">initialize the Cabal sandbox</a>. If we do it outside the project directory, we can reuse it for other projects as well. So, first:</p>
-<pre><code>mkdir -p $HOME/Haskell/cabal-sandbox
-cd $HOME/Haskell/cabal-sandbox
+<pre><code>export BFWP_SANDBOX=$HOME/.local/share/bfwp/cabal-sandbox
+mkdir -p $BFWP_SANDBOX
+cd $BFWP_SANDBOX
 cabal sandbox init</code></pre>
-<p>This will create a sandbox in <code>$HOME/Haskell/cabal-sandbox</code>. We’ll also need to add the <code>bin</code> directory there to our shell <code>PATH</code>. Run the following command to add it to your profile:</p>
+<p>This will create a sandbox in <code>$HOME/.local/share/bfwp/cabal-sandbox</code>. We’ll also need to add the <code>bin</code> directory there to our shell <code>PATH</code>. Run the following command to add it to your profile:</p>
 <pre><code>cat &gt;&gt; $HOME/.profile &lt;&lt;EOF
 
+BFWP_SANDBOX=$HOME/.local/share/bfwp/cabal-sandbox
+
 # Add the shared cabal sandbox to the PATH.
-export PATH=$$HOME/Haskell/cabal-sandbox/bin:$$PATH
+export PATH=$$BFWP_SANDBOX/bin:$$PATH
+
+# Clean up
+unset BFWP_SANDBOX
 
 EOF</code></pre>
 <p><em>NOTE: Make absolutely sure</em> you use <code>cat &gt;&gt;</code> above, or you’ll overwrite your profile instead of adding to it.</p>
 <p>At this point, we can also add it in the current shell:</p>
-<pre><code>export PATH=$HOME/Haskell/cabal-sandbox/bin:$PATH</code></pre>
-<h2 id="overall-setup-complete">Overall Setup Complete</h2>
+<pre><code>export PATH=$BFWP_SANDBOX/bin:$PATH</code></pre>
+<h3 id="overall-setup-complete">Overall Setup Complete</h3>
 <p>At this point, we’re ready to move on to working with the actual project. These steps only need to be completed once. From here on out, we’ll just be cloning repositories and reusing the sandbox we’ve created.</p>
 <h1 id="the-quicktracker-lesson">The <code>QuickTracker</code> Lesson</h1>
 <p>Now, we can clone the lesson repository. Pick a spot you’d like to work from in your home, and we can clone the repository there:</p>
 <pre><code>git clone git@gitlab.com:bfwp/Examples/QuickTracker.git
 cd QuickTracker</code></pre>
 <p>We need to configure it to use the sandbox we created:</p>
-<pre><code>cabal sandbox init --sandbox=$HOME/Haskell/cabal-sandbox</code></pre>
+<pre><code>cabal sandbox init --sandbox=$HOME/.local/bfwp/cabal-sandbox</code></pre>
 <p>Then we need to install the packages it depends on:</p>
 <pre><code>cabal install --only-dependencies</code></pre>
 <p>This might take some time, since it has to download all the packages <code>QuickTracker</code> needs and build them.</p>

@@ -7,7 +7,7 @@ This is meant to be an auditing tool for promotional campaigns to
 ensure that reported clicks are actually made through to the target
 site.
 
-# Git
+# Getting Started
 
 Let's set some sensible defaults in Git. First, we only want it to do
 "fast-forward" merges:
@@ -26,9 +26,9 @@ is rebasing. But rebasing and keeping the git history linear makes
 following the changes of a project and working with remote
 repositories much easier.
 
-# Cabal
+## Cabal
 
-## First Initialization
+### First Initialization
 
 First, we should make sure we have the latest cabal package list:
 
@@ -44,7 +44,7 @@ file. In your favorite text editor, open this file, and find the line
 This will help prevent accidentally installing packages outside of a
 sandbox, which will definitely impact the system.
 
-## Sandbox Setup
+### Sandbox Setup
 
 Now, we
 can
@@ -52,18 +52,25 @@ can
 we do it outside the project directory, we can reuse it for other
 projects as well. So, first:
 
-    mkdir -p $HOME/Haskell/cabal-sandbox
-    cd $HOME/Haskell/cabal-sandbox
+    export BFWP_SANDBOX=$HOME/.local/share/bfwp/cabal-sandbox
+    mkdir -p $BFWP_SANDBOX
+    cd $BFWP_SANDBOX
     cabal sandbox init
 
-This will create a sandbox in `$HOME/Haskell/cabal-sandbox`. We'll
-also need to add the `bin` directory there to our shell `PATH`. Run
-the following command to add it to your profile:
+This will create a sandbox in
+`$HOME/.local/share/bfwp/cabal-sandbox`. We'll also need to add the
+`bin` directory there to our shell `PATH`. Run the following command
+to add it to your profile:
 
     cat >> $HOME/.profile <<EOF
 
+    BFWP_SANDBOX=$HOME/.local/share/bfwp/cabal-sandbox
+
     # Add the shared cabal sandbox to the PATH.
-    export PATH=$$HOME/Haskell/cabal-sandbox/bin:$$PATH
+    export PATH=$$BFWP_SANDBOX/bin:$$PATH
+
+    # Clean up
+    unset BFWP_SANDBOX
 
     EOF
 
@@ -72,9 +79,9 @@ overwrite your profile instead of adding to it.
 
 At this point, we can also add it in the current shell:
 
-    export PATH=$HOME/Haskell/cabal-sandbox/bin:$PATH
+    export PATH=$BFWP_SANDBOX/bin:$PATH
 
-## Overall Setup Complete
+### Overall Setup Complete
 
 At this point, we're ready to move on to working with the actual
 project. These steps only need to be completed once. From here on out,
@@ -91,7 +98,7 @@ work from in your home, and we can clone the repository there:
 
 We need to configure it to use the sandbox we created:
 
-    cabal sandbox init --sandbox=$HOME/Haskell/cabal-sandbox
+    cabal sandbox init --sandbox=$HOME/.local/bfwp/cabal-sandbox
 
 Then we need to install the packages it depends on:
 

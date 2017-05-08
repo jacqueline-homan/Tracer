@@ -49,11 +49,12 @@ CABAL_HADDOCK_OPTIONS := \
 
 CABAL_INSTALL := \
 	cabal install \
+	-j1 \
 	--enable-documentation \
 	$(patsubst --%,--haddock-%,$(CABAL_HADDOCK_OPTIONS))
 
 CABAL_BUILD := \
-	cabal build
+	cabal build -j1
 
 CABAL_HADDOCK := \
 	cabal haddock \

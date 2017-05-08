@@ -3,8 +3,9 @@ SHELL := bash
 
 # The default path for the shared sandbox for all of BFWP.
 BFWP_SANDBOX := $(HOME)/.local/share/bfwp/cabal-sandbox
+BFWP_BIN_DIR := $(BFWP_SANDBOX)/bin
 
-PATH := $(BFWP_SANDBOX)/bin:$(PATH)
+PATH := $(BFWP_BIN_DIR):$(PATH)
 
 # Check for Brew, if found, add the PKG_CONFIG_PATH for icu from Brew.
 ifneq ($(strip $(shell which brew)),)
@@ -59,7 +60,6 @@ CABAL_HADDOCK := \
 	$(CABAL_HADDOCK_OPTIONS)
 
 CABAL_PRE_BINS := haddock HsColour hoogle
-PRE_BINS := $(CABAL_PRE_BINS:%=$(BFWP_SANDBOX)/bin/%)
 
 .PHONY: \
 	all \
@@ -67,13 +67,20 @@ PRE_BINS := $(CABAL_PRE_BINS:%=$(BFWP_SANDBOX)/bin/%)
 	cabal-sandbox \
 	cabal-update \
 	cabal-install-deps \
-	pre-bins \
+	cabal-pre-bins \
 	cabal-install \
 	project-sandbox \
 	haddock-view
 
 # Build our project and the documentation
 all: cabal-install $(HTMLS)
+
+cabal-pre-bins: $(CABAL_PRE_BINS) cabal-sandbox
+
+$(CABAL_PRE_BINS): $(CABAL_PRE_BINS:%=$(BFWP_BIN_DIR)/%)
+
+$(CABAL_PRE_BINS:%=$(BFWP_BIN_DIR)/%):
+	$(CABAL_INSTALL) $$(basename $@)
 
 # We want to make sure we're using the latest cabal package list. Then
 # we create the sandbox if it's not there already.
@@ -92,15 +99,10 @@ cabal-update:
 # brew is installed. Every other package manager is sensible. Also
 # install haddock, hscolour, and hoogle so we can build the
 # documentation.
-cabal-install-deps: cabal-update project-sandbox pre-bins
+cabal-install-deps: cabal-update project-sandbox cabal-pre-bins
 	$(CABAL_INSTALL) \
 		--only-dependencies \
 		--gcc-options="$(ICU_OPTS)"
-
-pre-bins: $(PRE_BINS) cabal-sandbox
-
-$(BFWP_SANDBOX/bin/%): %
-	$(CABAL_INSTALL) $@
 
 # Build our project.
 cabal-build: cabal-install-deps

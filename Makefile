@@ -80,7 +80,7 @@ cabal-pre-bins: $(CABAL_PRE_BINS) cabal-sandbox
 $(CABAL_PRE_BINS): $(CABAL_PRE_BINS:%=$(BFWP_BIN_DIR)/%)
 
 $(CABAL_PRE_BINS:%=$(BFWP_BIN_DIR)/%):
-	$(CABAL_INSTALL) $$(basename $@)
+	$(CABAL_INSTALL) --disable-tests $$(basename $@)
 
 # We want to make sure we're using the latest cabal package list. Then
 # we create the sandbox if it's not there already.

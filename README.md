@@ -21,9 +21,7 @@ branches, we rebase on top of them to avoid merge commits:
     git config --global branch.autosetupmerge=0
     git config --global pull.rebase=true
 
-Merge commits are problematic for any number of reasons, but then so
-is rebasing. But rebasing and keeping the git history linear makes
-following the changes of a project and working with remote
+Merge commits are problematic for any number of reasons, but then so is rebasing. But rebasing and keeping the git history linear makes following the changes of a project and working with remote
 repositories much easier.
 
 ## Cabal
@@ -404,3 +402,11 @@ and has a lot of structures that can be built on, or "composed", as
 Functional Programmers like to say, and, really, basically every
 operator and every syntax is in some way supporting this kind of
 composition.
+
+To run the program, simply type the following command in your terminal:
+
+cabal run "<website_url>" "<whatever_message_u_want>"
+
+For example: 
+
+cabal run "https://www.patreon.com/teamunixman" "check this out"
